@@ -106,7 +106,7 @@ struct MessagesView: View {
                     NavigationLink(value: conversation.thread) {
                         ConversationRow(conversation: conversation)
                     }
-                    .hideLinkChevron()
+
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button(role: .destructive) { deleting = conversation } label: {
                             Label("Delete", systemImage: "trash")
@@ -290,11 +290,6 @@ struct ConversationRow: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
-                    if #available(iOS 17.0, *) {
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(.tertiary)
-                    }
                 }
                 Text(MessageText.plain(conversation.last.body))
                     .font(.subheadline)
@@ -767,12 +762,5 @@ struct ComposeView: View {
             if out.count > 6 { break }
         }
         return out
-    }
-}
-
-extension View {
-    /// Hides the list's own disclosure chevron (iOS 17+) so the row can draw it beside the date, as Messages does.
-    @ViewBuilder func hideLinkChevron() -> some View {
-        if #available(iOS 17.0, *) { self.navigationLinkIndicatorVisibility(.hidden) } else { self }
     }
 }

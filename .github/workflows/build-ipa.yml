@@ -1,0 +1,78 @@
+name: Build iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "ios/**"
+      - "Package.swift"
+      - "Package.resolved"
+      - ".github/workflows/build-ipa.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-ipa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-ipa:
+    name: Build unsigned iPhone IPA
+    runs-on: macos-15
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v7
+
+      - name: Install XcodeGen
+        run: |
+          brew install xcodegen
+          xcodegen --version
+
+      - name: Generate Xcode project
+        working-directory: ios
+        run: xcodegen generate --quiet
+
+      - name: Build iOS app (Release, unsigned)
+        working-directory: ios
+        run: |
+          xcodebuild \
+            -project Tether.xcodeproj \
+            -scheme Tether \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build-ipa \
+            -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO \
+            build -quiet
+
+      - name: Package unsigned IPA
+        env:
+          VERSION: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          APP="$(find ios/build-ipa/Build/Products/Release-iphoneos -maxdepth 1 -name '*.app' -print -quit)"
+          if [ -z "$APP" ]; then
+            echo "::error::The iOS .app product was not found."
+            exit 1
+          fi
+
+          APP_VERSION=$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$APP/Info.plist")
+          BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c 'Print CFBundleVersion' "$APP/Info.plist")
+          mkdir -p ipa/Payload
+          cp -R "$APP" ipa/Payload/
+          (cd ipa && zip -qry "../Tether-${APP_VERSION}-unsigned.ipa" Payload)
+
+          echo "Built Tether version $APP_VERSION (build $BUILD_NUMBER)"
+          ls -lh "Tether-${APP_VERSION}-unsigned.ipa"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: tether-unsigned-ipa
+          path: Tether-*-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 30

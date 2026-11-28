@@ -106,7 +106,7 @@ struct MessagesView: View {
                     NavigationLink(value: conversation.thread) {
                         ConversationRow(conversation: conversation)
                     }
-                    
+
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button(role: .destructive) { deleting = conversation } label: {
                             Label("Delete", systemImage: "trash")

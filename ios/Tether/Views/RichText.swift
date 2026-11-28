@@ -36,7 +36,7 @@ final class RichTextCache {
             a[r].inlinePresentationIntent = intent
         }
         // Links read on both bubbles: white on the green (sent) one, the accent teal on the grey one.
-        let linkColor: Color = mine ? .white : Color("AccentColor")
+        let linkColor: Color = mine ? .white : Color.blue
         for e in p.entities {
             guard let r = Range(e.range, in: a) else { continue }
             switch e.kind {
@@ -52,7 +52,7 @@ final class RichTextCache {
             case .code(let code):
                 a[r].link = URL(string: "\(codeScheme):\(code)")
                 a[r].inlinePresentationIntent = (a[r].inlinePresentationIntent ?? []).union(.stronglyEmphasized)
-                a[r].backgroundColor = mine ? Color.black.opacity(0.22) : Color("AccentColor").opacity(0.28)
+                a[r].backgroundColor = mine ? Color.black.opacity(0.22) : Color.blue.opacity(0.28)
                 a[r].kern = 1.2
                 a[r].foregroundColor = mine ? .white : .primary
                 continue

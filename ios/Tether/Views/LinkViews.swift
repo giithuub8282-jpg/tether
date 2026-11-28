@@ -13,7 +13,9 @@ struct LinkView: View {
 
     @ViewBuilder private var bodyContent: some View {
         NavigationStack {
-            ScrollViewReader { scroller in
+            VStack(spacing: 0) {
+                StatusStrip()
+                ScrollViewReader { scroller in
             List {
                 if !model.isPaired {
                     SetupGuideSection(
@@ -122,13 +124,6 @@ struct LinkView: View {
                         } else if s.helper.audioBlocked {
                             Text("This Android phone's software gives Tether no call audio (the call sounds like silence to it). Calls are still answered, placed and ended here, but you hear and speak on the Android phone. A system update, or a self-test during a call that hears the call, turns call audio back on. If calls on the phone itself have no sound either, restart the phone once.")
                                 .font(.footnote).foregroundStyle(.orange)
-                        }
-                        if s.helper.stoppedWithoutWifi {
-                            Text("No call audio right now: the Android phone is not on Wi-Fi, so it cannot start its audio helper (Wireless debugging needs Wi-Fi). Connect it to Wi-Fi, or set up TCP debugging on it (Setup).")
-                                .font(.footnote).foregroundStyle(.orange)
-                        } else if s.helper.stopsWithoutWifi {
-                            Text("Call audio stops if the Android phone leaves Wi-Fi. To keep it, turn on USB debugging there: Tether › Call audio › Turn on USB debugging.")
-                                .font(.footnote).foregroundStyle(.secondary)
                         }
                         if let m = s.helper.method { LabeledContent("Inject method", value: m) }
                         if let m = s.helper.capture { LabeledContent("Capture method", value: m) }
@@ -256,6 +251,7 @@ struct LinkView: View {
                                 titleVisibility: .visible) {
                 Button("Unpair", role: .destructive) { model.unpair() }
             }
+            }
         }
     }
 
@@ -279,7 +275,7 @@ private struct SetupGuideSection: View {
     let scan: () -> Void
 
     /// The app's own teal (Assets › AccentColor), as on every other screen.
-    private let accent = Color("AccentColor")
+    private let accent = Color.blue
 
     private var bluetoothUnavailable: Bool { linkState == .poweredOff || linkState == .unauthorized }
 
@@ -782,7 +778,7 @@ struct PairingView: View {
     @State private var completed = false
 
     /// The app's own teal (Assets › AccentColor), as on every other screen.
-    private let accent = Color("AccentColor")
+    private let accent = Color.blue
 
     var body: some View {
         NavigationStack {
